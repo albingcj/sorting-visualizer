@@ -54,68 +54,115 @@ impl SortingVisualizer {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Merge Sort
-    ///////////////////////////////////////////////////////////////////////////
     pub fn merge_sort(arr: &mut Vec<i32>, mut visualize: impl FnMut(usize, usize)) {
         fn merge_sort_recursive(
             arr: &mut [i32],
-            left: usize,
-            right: usize,
+            offset: usize,
             visualize: &mut impl FnMut(usize, usize),
         ) {
-            if left >= right {
+            let n = arr.len();
+            if n <= 1 {
                 return;
             }
-            let mid = (left + right) / 2;
-            merge_sort_recursive(arr, left, mid, visualize);
-            merge_sort_recursive(arr, mid + 1, right, visualize);
-            merge(arr, left, mid, right, visualize);
+            let mid = n / 2;
+            
+            merge_sort_recursive(&mut arr[..mid], offset, visualize);
+            merge_sort_recursive(&mut arr[mid..], offset + mid, visualize);
+            merge(arr, offset, mid, visualize);
         }
-
+    
         fn merge(
             arr: &mut [i32],
-            left: usize,
+            offset: usize,
             mid: usize,
-            right: usize,
-            _visualize: &mut impl FnMut(usize, usize),
+            visualize: &mut impl FnMut(usize, usize),
         ) {
-            // If you'd like to visualize merges, you could call your closure here
-            // with the indices being merged. But for now, we won't call it to avoid
-            // out-of-bounds on partial merges. 
-            let mut temp = Vec::new();
-            let mut i = left;
-            let mut j = mid + 1;
-
-            while i <= mid && j <= right {
-                if arr[i] <= arr[j] {
-                    temp.push(arr[i]);
+            let left_part = arr[..mid].to_vec();
+            let right_part = arr[mid..].to_vec();
+    
+            let (mut i, mut j, mut k) = (0, 0, 0);
+            
+            while i < left_part.len() && j < right_part.len() {
+                if left_part[i] <= right_part[j] {
+                    arr[k] = left_part[i];
+                    // Swap the bar from "left side index" to the merged position k
+                    // 'offset + i' is where the left element originally came from
+                    visualize(offset + i, offset + k);
                     i += 1;
                 } else {
-                    temp.push(arr[j]);
+                    arr[k] = right_part[j];
+                    // Swap the bar from "right side index" (offset+mid+j) to position k
+                    visualize(offset + mid + j, offset + k);
                     j += 1;
                 }
+                k += 1;
             }
-            while i <= mid {
-                temp.push(arr[i]);
+    
+            // Copy any remaining elements of left_part
+            while i < left_part.len() {
+                arr[k] = left_part[i];
+                visualize(offset + i, offset + k);
                 i += 1;
+                k += 1;
             }
-            while j <= right {
-                temp.push(arr[j]);
+    
+            // Copy any remaining elements of right_part
+            while j < right_part.len() {
+                arr[k] = right_part[j];
+                visualize(offset + mid + j, offset + k);
                 j += 1;
+                k += 1;
+            }
+        }
+    
+        merge_sort_recursive(arr, 0, &mut visualize);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Quick Sort (added)
+    ///////////////////////////////////////////////////////////////////////////
+    pub fn quick_sort(arr: &mut Vec<i32>, mut visualize: impl FnMut(usize, usize)) {
+        fn quick_sort_recursive(
+            arr: &mut [i32],
+            offset: usize,
+            visualize: &mut impl FnMut(usize, usize),
+        ) {
+            let len = arr.len();
+            if len <= 1 {
+                return;
             }
 
-            for (k, &val) in temp.iter().enumerate() {
-                arr[left + k] = val;
-                // Example (commented out):
-                // _visualize(left + k, left + k);
+            // Partition the array
+            let pivot_index = partition(arr, offset, visualize);
+            // Recursively sort elements before pivot
+            let (left, right) = arr.split_at_mut(pivot_index);
+            quick_sort_recursive(left, offset, visualize);
+            // Recursively sort elements after pivot
+            if right.len() > 1 {
+                quick_sort_recursive(&mut right[1..], offset + pivot_index + 1, visualize);
             }
         }
 
-        let n = arr.len();
-        if n > 1 {
-            merge_sort_recursive(arr, 0, n - 1, &mut visualize);
+        fn partition(
+            arr: &mut [i32],
+            offset: usize,
+            visualize: &mut impl FnMut(usize, usize),
+        ) -> usize {
+            let pivot_value = arr[arr.len() - 1];
+            let mut i = 0; 
+            for j in 0..arr.len() - 1 {
+                if arr[j] < pivot_value {
+                    arr.swap(i, j);
+                    visualize(offset + i, offset + j);
+                    i += 1;
+                }
+            }
+            arr.swap(i, arr.len() - 1);
+            visualize(offset + i, offset + arr.len() - 1);
+            i
         }
+
+        quick_sort_recursive(arr, 0, &mut visualize);
     }
 }
 
@@ -150,7 +197,6 @@ pub fn visualize_sorting_algorithm(algorithm: &str, input_array: Vec<i32>) {
 
     // Visualization closure using our bars Vec
     let mut visualize = |i: usize, j: usize| {
-        // Defensive check (avoid out-of-bounds panic)
         if i < bars.len() && j < bars.len() {
             let bar_i = &bars[i];
             let bar_j = &bars[j];
@@ -172,6 +218,7 @@ pub fn visualize_sorting_algorithm(algorithm: &str, input_array: Vec<i32>) {
         "insertion_sort" => SortingVisualizer::insertion_sort_swaps(&mut arr, &mut visualize),
         "selection_sort" => SortingVisualizer::selection_sort(&mut arr, &mut visualize),
         "merge_sort" => SortingVisualizer::merge_sort(&mut arr, &mut visualize),
+        "quick_sort" => SortingVisualizer::quick_sort(&mut arr, &mut visualize),
         _ => panic!("Unsupported algorithm"),
     }
 }
