@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Sorting Visualizer</h1>
+    
+    <div>
+        <label for="arraySizeSlider">Array Size:</label>
+        <input type="range" id="arraySizeSlider" min="5" max="100" value="7">
+        <span id="arraySizeValue">7</span>
+    </div>
+    <div>
+        <label for="maxValueSlider">Max Value:</label>
+        <input type="range" id="maxValueSlider" min="10" max="500" value="100">
+        <span id="maxValueValue">100</span>
+    </div>
+    
+    <div id="visualization" style="margin-top:20px;"></div>
+    
+    <button onclick="startVisualization('bubble_sort')">Bubble Sort</button>
+    
+    <p id="timeTaken" style="margin-top:20px;"></p>
+    
+    <script type="module">
+        import init, { visualize_sorting_algorithm } from "./pkg/sorting_visualizer.js";
+
+        // Initialize WASM once
+        init().then(() => {
+            console.log("WASM initialized");
+        });
+
+        // Update the text next to the sliders whenever the sliders move
+        const arraySizeSlider = document.getElementById("arraySizeSlider");
+        const maxValueSlider = document.getElementById("maxValueSlider");
+
+        const arraySizeValue = document.getElementById("arraySizeValue");
+        const maxValueValue = document.getElementById("maxValueValue");
+
+        arraySizeSlider.addEventListener("input", () => {
+            arraySizeValue.textContent = arraySizeSlider.value;
+        });
+        maxValueSlider.addEventListener("input", () => {
+            maxValueValue.textContent = maxValueSlider.value;
+        });
+
+        function startVisualization(algorithm) {
+            // Clear existing visualization
+            const container = document.getElementById("visualization");
+            container.innerHTML = "";
+
+            // Get values from sliders
+            const arraySize = parseInt(arraySizeSlider.value, 10);
+            const maxValue = parseInt(maxValueSlider.value, 10);
+
+            // Generate random array based on slider values
+            let inputArray = [];
+            for (let i = 0; i < arraySize; i++) {
+                inputArray.push(Math.floor(Math.random() * maxValue) + 1);
+            }
+
+            // Start timing
+            const startTime = performance.now();
+
+            // Call our WASM function
+            visualize_sorting_algorithm(algorithm, inputArray);
+
+            // End timing
+            const endTime = performance.now();
+            const timeTaken = endTime - startTime;
+
+            // Display how long it took
+            document.getElementById("timeTaken").textContent =
+                "Time taken: " + timeTaken.toFixed(2) + " ms";
+        }
+
+        // Make startVisualization available globally
+        window.startVisualization = startVisualization;
+    </script>
+</body>
+</html>
