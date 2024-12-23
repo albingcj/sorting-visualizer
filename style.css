@@ -9,13 +9,11 @@ body {
     align-items: flex-end;
     height: 400px;
     width: 80%;
-    margin: 20px auto;
     border: 1px solid #ccc;
 }
 
 .bar {
     width: 20px;
-    margin: 2px;
     background-color: #4caf50;
     transition: height 0.2s;
 }

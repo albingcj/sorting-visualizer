@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Sorting Visualizer</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
     <h1>Sorting Visualizer</h1>
     
     <div>
         <label for="arraySizeSlider">Array Size:</label>
-        <input type="range" id="arraySizeSlider" min="5" max="100" value="7">
+        <input type="range" id="arraySizeSlider" min="5" max="1000" value="7">
         <span id="arraySizeValue">7</span>
     </div>
     <div>
@@ -23,6 +23,9 @@
     <div id="visualization" style="margin-top:20px;"></div>
     
     <button onclick="startVisualization('bubble_sort')">Bubble Sort</button>
+    <button onclick="startVisualization('insertion_sort')">Insertion Sort</button>
+    <button onclick="startVisualization('selection_sort')">Selection Sort</button>
+    <button onclick="startVisualization('merge_sort')">Merge Sort</button>
     
     <p id="timeTaken" style="margin-top:20px;"></p>
     
